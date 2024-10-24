@@ -1,7 +1,6 @@
 'use strict';
 
 const parser = require("@babel/parser");
-const traverse = require("@babel/traverse").default;
 const t = require('@babel/types');
 
 // Helper function to collect operator frequency

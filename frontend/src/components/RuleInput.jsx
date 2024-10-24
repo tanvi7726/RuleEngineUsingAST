@@ -1,12 +1,24 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const RuleInput = ({ addRule }) => {
   const [rule, setRule] = useState("");
 
-  const handleAddRule = () => {
+  const handleAddRule = async () => {
     if (rule.trim()) {
-      addRule(rule);
-      setRule(""); // Clear input after adding rule
+      try {
+        const response = await axios.post("http://localhost:5000/api/rules/create", {
+          string: rule
+        });
+
+        if (response.data) {
+          addRule(response.data);
+          setRule(""); // Clear the input after successfully adding rule
+        }
+      } catch (error) {
+        console.error("Error adding rule:", error);
+        alert("Failed to add rule. Please try again.");
+      }
     } else {
       alert("Please enter a valid rule");
     }
