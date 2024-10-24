@@ -14,7 +14,7 @@ const RuleList = ({ rules, selectedRules, setSelectedRules }) => {
 
   return (
     <div className="p-4 mt-6">
-      <h2 className="text-xl font-semibold mb-4">Existing Rules</h2>
+      <h2 className="text-xl font-bold mb-4">Existing Rules</h2>
       {rules.length === 0 ? (
         <p>No rules available</p>
       ) : (

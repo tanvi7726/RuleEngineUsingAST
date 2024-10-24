@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const RuleEvaluation = ({ evaluateRule }) => {
+const RuleEvaluation = ({ ast, evaluateRule }) => {
   const [formData, setFormData] = useState({
     age: "",
     department: "",
@@ -16,9 +16,19 @@ const RuleEvaluation = ({ evaluateRule }) => {
     });
   };
 
+  // Function to evaluate the rule using the user data and the AST
+  const handleEvaluate = () => {
+    try {
+      const result = evaluateRule(formData); // Only pass formData now
+    } catch (error) {
+      console.error("Error evaluating rule:", error);
+      alert("Failed to evaluate the rule.");
+    }
+  };
+
   return (
     <div className="p-4 mt-6">
-      <h2 className="text-xl font-semibold mb-4">Evaluate Rule</h2>
+      <h2 className="text-xl font-bold mb-4">Evaluate Rule</h2>
       <div className="grid gap-4">
         <input
           type="text"
@@ -55,9 +65,9 @@ const RuleEvaluation = ({ evaluateRule }) => {
       </div>
       <button
         className="mt-4 bg-blue-500 text-white p-2 rounded"
-        onClick={() => evaluateRule(formData)}
+        onClick={handleEvaluate} // Call handleEvaluate on button click
       >
-        Evaluate Selected Rules
+        Evaluate Selected Rule
       </button>
     </div>
   );

@@ -1,21 +1,7 @@
 'use strict';
 
 const parser = require("@babel/parser");
-const t = require('@babel/types');
-
-// Helper function to collect operator frequency
-function collectOperatorFrequencies(ast, operatorFrequency)
-{
-    if (ast.type === 'LogicalExpression')
-	{
-		const operator = ast.operator; // && or ||
-		operatorFrequency[operator] = (operatorFrequency[operator] || 0) + 1;
-  
-		// Recursively collect from left and right branches of the AST
-		collectOperatorFrequencies(ast.left, operatorFrequency);
-		collectOperatorFrequencies(ast.right, operatorFrequency);
-    }
-}
+const { default: generate } = require("@babel/generator");
 
 function create_rule(rule) {
     try
@@ -29,15 +15,27 @@ function create_rule(rule) {
         return null;
     }
 }
+
+const t = require('@babel/types');
+// Helper function to collect operator frequency
+function collectOperatorFrequencies(ast, operatorFrequency)
+{
+    if (ast.type === 'LogicalExpression')
+    {
+        const operator = ast.operator; // && or ||
+        operatorFrequency[operator] = (operatorFrequency[operator] || 0) + 1;
   
+        // Recursively collect from left and right branches of the AST
+        collectOperatorFrequencies(ast.left, operatorFrequency);
+        collectOperatorFrequencies(ast.right, operatorFrequency);
+    }
+}
+
 // Function to combine rules using the most frequent operator
 function combine_rules(rules)
 {
-    // Parse each rule into an AST
-    const ruleASTs = rules.map(rule => parser.parseExpression(rule));
-  
     const operatorFrequency = {};
-    ruleASTs.forEach(ast => collectOperatorFrequencies(ast, operatorFrequency));
+    rules.forEach(ast => collectOperatorFrequencies(ast, operatorFrequency));
   
     // Determine the most frequent operator
     const mostFrequentOperator = Object.keys(operatorFrequency).reduce((a, b) => 
@@ -45,10 +43,10 @@ function combine_rules(rules)
     );
   
     // Combine the ASTs using the most frequent operator
-    let combinedAST = ruleASTs[0];
-    for (let i = 1; i < ruleASTs.length; i++)
+    let combinedAST = rules[0];
+    for (let i = 1; i < rules.length; i++)
 	{
-      	combinedAST = t.logicalExpression(mostFrequentOperator, combinedAST, ruleASTs[i]);
+      	combinedAST = t.logicalExpression(mostFrequentOperator, combinedAST, rules[i]);
     }
 
     return combinedAST;

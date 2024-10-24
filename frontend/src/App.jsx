@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import RuleInput from "./components/RuleInput";
 import RuleList from "./components/RuleList";
 import axios from "axios"; // Import axios for API calls
+import RuleCombination from './components/RuleCombination';
+import RuleEvaluation from './components/RuleEvaluation';
 
 function App() {
-  const [rules, setRules] = useState([]); // Store rule strings
+  const [rules, setRules] = useState([]); // Store rule objects including strings and ASTs
   const [selectedRules, setSelectedRules] = useState([]); // Track selected rules
 
   // Fetch rules from the backend
@@ -15,8 +17,7 @@ function App() {
 
       // Ensure the response contains an array of rule objects
       if (Array.isArray(response.data)) {
-        const rulesStrings = response.data; // Extract the 'string' property from each rule object
-        setRules(rulesStrings); // Set the state with the array of strings
+        setRules(response.data); // Set the state with the array of rule objects
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -34,27 +35,73 @@ function App() {
     setRules((prevRules) => [...prevRules, rule]); // Ensure you are using previous state for safety
   };
 
-  // Function to combine selected rules and add them to the list
-  const combineRules = (selectedRules) => {
-    if (selectedRules.length > 0) {
-      const combined = selectedRules.join(" AND "); // Combine rule strings
-      setRules((prevRules) => [...prevRules, combined]); // Add combined rule as a string
-      alert(`Combined Rule: ${combined}`);
-    } else {
-      alert("Please select rules to combine.");
+  const evaluate_rule = function (node, userData) {
+    if (node.type === "BinaryExpression") {
+      const left = node.left.name; // age, department
+      const operator = node.operator; // >, ==
+      const right = node.right.value; // 30, 'Sales'
+
+      // Evaluate binary expression (e.g., "age > 30")
+      switch (operator) {
+        case '>':
+          return userData[left] > right;
+        case '==':
+          return userData[left] == right;
+        case '===':
+          return userData[left] === right;
+        case '<':
+          return userData[left] < right;
+        case '>=':
+          return userData[left] >= right;
+        case '<=':
+          return userData[left] <= right;
+        // Add more cases as needed
+        default:
+          throw new Error(`Unsupported operator: ${operator}`);
+      }
     }
-  };
+
+    if (node.type === "LogicalExpression") {
+      const leftResult = evaluate_rule(node.left, userData);
+      const rightResult = evaluate_rule(node.right, userData);
+
+      // Handle logical expressions (AND, OR)
+      if (node.operator === '&&') {
+        return leftResult && rightResult;
+      }
+      else if (node.operator === '||') {
+        return leftResult || rightResult;
+      }
+      else {
+        throw new Error(`Unsupported logical operator: ${node.operator}`);
+      }
+    }
+
+    throw new Error(`Unsupported node type: ${node.type}`);
+  }
 
   // Function to evaluate selected rules
   const evaluateRule = (formData) => {
     if (selectedRules.length === 0) {
-      alert("Please select rules to evaluate.");
+      alert("Please select a rule to evaluate.");
       return;
     }
 
-    // You can later connect this with backend logic for actual evaluation
-    console.log("Evaluating selected rules with data:", formData);
-    alert("Evaluation result will be displayed here!");
+    // Retrieve the AST of the selected rule (assuming only one rule is selected for evaluation)
+    const selectedRuleAST = selectedRules[0]?.ast;
+
+    if (!selectedRuleAST) {
+      alert("Error: Unable to find the AST for the selected rule.");
+      return;
+    }
+
+    try {
+      const evaluationResult = evaluate_rule(selectedRuleAST, formData); // Use the evaluation logic
+      alert(`Evaluation result: ${evaluationResult}`);
+    } catch (error) {
+      console.error("Error evaluating rule:", error);
+      alert("Failed to evaluate the rule.");
+    }
   };
 
   return (
@@ -71,12 +118,11 @@ function App() {
       />
 
       {/* Rule combination section */}
-      {/* Uncomment and implement if needed */}
-      {/* <RuleCombination rules={rules} combineRules={combineRules} /> */}
+      <RuleCombination rules={rules} setRules={setRules} />
 
       {/* Rule evaluation section */}
-      {/* Uncomment and implement if needed */}
-      {/* <RuleEvaluation evaluateRule={evaluateRule} /> */}
+      <RuleEvaluation evaluateRule={evaluateRule} ast={selectedRules[0]?.ast} />
+      
     </div>
   );
 }
