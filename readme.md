@@ -43,7 +43,6 @@ To set up the project locally, follow these steps:
    cd RuleEngineUsingAST
    cd backend
 
-
 3. Install the frontend dependencies:
     ```bash
     npm install
