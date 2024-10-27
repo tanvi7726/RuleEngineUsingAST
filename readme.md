@@ -53,7 +53,7 @@ To set up the project locally, follow these steps:
     
 Now since both the frontend and backend are running. You should be able to use the app as intended.
     
-Screenshots of the working project:
+## Screenshots of the working project:
 ![1](https://github.com/user-attachments/assets/e25a4540-04ee-4564-b249-8ab19151f5ff)
 ![2](https://github.com/user-attachments/assets/59f5c0cb-2a62-4170-a772-821541dc8748)
 
